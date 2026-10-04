@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Christmas Gift Exchange</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23146b45'/%3E%3Cpath d='M32 8 16 31h8L12 48h14v8h12v-8h14L40 31h8L32 8Z' fill='%23dcefe2'/%3E%3Cpath d='M32 16 21 34h7l-10 11h28L36 34h7L32 16Z' fill='%23b91c2b'/%3E%3Ccircle cx='32' cy='26' r='3' fill='%23d6a83b'/%3E%3Cpath d='M28 56h8' stroke='%23d6a83b' stroke-width='4'/%3E%3C/svg%3E">
 <style>
   :root{
     --red:#b91c2b;
@@ -624,8 +625,18 @@
     if (n < 3) throw new Error("You need at least 3 people.");
     const recipients = Array(n).fill(null);
     const available = new Set(Array.from({length:n}, (_, index) => index));
-    const cannotMatch = (giverIndex, recipientIndex) => giverIndex === recipientIndex ||
-      rules.some(rule => rule.personIds.includes(people[giverIndex].id) && rule.personIds.includes(people[recipientIndex].id));
+    const getMatchFailureReason = (giverIndex, recipientIndex) => {
+      const reasons = [];
+      if (giverIndex === recipientIndex) reasons.push("the giver would be matched with themselves");
+      const conflictingRules = rules.filter(rule =>
+        rule.personIds.includes(people[giverIndex].id) && rule.personIds.includes(people[recipientIndex].id)
+      );
+      if (conflictingRules.length) {
+        reasons.push(`the do-not-match rule${conflictingRules.length > 1 ? "s" : ""} ${conflictingRules.map(rule => `"${rule.name}"`).join(", ")} forbids it`);
+      }
+      if (recipients[recipientIndex] === giverIndex) reasons.push("it would create a reciprocal pair");
+      return reasons.length ? reasons.join(" and ") : null;
+    };
 
     function solve(unassigned) {
       if (!unassigned.length) return true;
@@ -633,8 +644,12 @@
       let selectedCandidates = null;
       unassigned.forEach(giverIndex => {
         const candidates = [...available].filter(recipientIndex => {
-          if (cannotMatch(giverIndex, recipientIndex)) return false;
-          return recipients[recipientIndex] !== giverIndex;
+          const failureReason = getMatchFailureReason(giverIndex, recipientIndex);
+          if (failureReason) {
+            console.log("[Gift Exchange] Match unsuccessful:", `${people[giverIndex].name} -> ${people[recipientIndex].name}`, failureReason);
+            return false;
+          }
+          return true;
         });
         if (!selectedCandidates || candidates.length < selectedCandidates.length) {
           selectedGiver = giverIndex;
@@ -649,6 +664,7 @@
         if (solve(remaining)) return true;
         available.add(recipientIndex);
         recipients[selectedGiver] = null;
+        console.log("[Gift Exchange] Match unsuccessful:", `${people[selectedGiver].name} -> ${people[recipientIndex].name}`, "the remaining participants could not be assigned valid recipients");
       }
       return false;
     }
