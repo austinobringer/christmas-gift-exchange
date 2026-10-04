@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Christmas Gift Exchange</title>
+<style>
+  :root{
+    --red:#b91c2b;
+    --red-dark:#7f1520;
+    --green:#146b45;
+    --green-dark:#0c4d32;
+    --cream:#fffaf0;
+    --gold:#d6a83b;
+    --ink:#243126;
+    --muted:#6f776f;
+    --card:#ffffff;
+    --shadow:0 18px 50px rgba(52,34,19,.12);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    color:var(--ink);
+    font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background:
+      radial-gradient(circle at 10% 0%, rgba(255,255,255,.8), transparent 24rem),
+      linear-gradient(180deg,#edf7ef 0%,#fffaf0 44%,#f7eee1 100%);
+    min-height:100vh;
+  }
+  body:before{
+    content:"";
+    position:fixed; inset:0; pointer-events:none; opacity:.12;
+    background-image:
+      radial-gradient(circle, #fff 1.2px, transparent 1.5px);
+    background-size:34px 34px;
+  }
+  .garland{
+    height:18px;
+    background:
+      radial-gradient(circle at 10px 9px,#d7aa38 0 4px,transparent 4.5px) 0 0/38px 18px,
+      linear-gradient(90deg,var(--green),var(--green-dark));
+    box-shadow:0 2px 8px rgba(0,0,0,.12);
+  }
+  header{
+    color:white;
+    background:
+      radial-gradient(circle at 18% 10%,rgba(255,255,255,.14),transparent 18rem),
+      linear-gradient(135deg,var(--green-dark),var(--green));
+    padding:42px 20px 58px;
+    position:relative;
+    overflow:hidden;
+  }
+  header:after{
+    content:"✦  ·  ❄  ·  ✦  ·  ❄  ·  ✦  ·  ❄  ·  ✦";
+    position:absolute; inset:auto 0 12px; text-align:center;
+    color:rgba(255,255,255,.5); letter-spacing:18px; font-size:14px;
+  }
+  .header-inner{max-width:1100px;margin:auto;position:relative;z-index:1}
+  .brand{display:flex;align-items:center;gap:14px}
+  .tree{font-size:48px;filter:drop-shadow(0 5px 4px rgba(0,0,0,.18))}
+  h1{margin:0;font-family:Georgia,serif;font-size:clamp(2.2rem,5vw,3.7rem);line-height:1}
+  .subtitle{margin:12px 0 0;color:#dcefe2;font-size:1.05rem}
+  .app{max-width:1100px;margin:-28px auto 50px;padding:0 18px;position:relative;z-index:2}
+  .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:20px}
+  .card{
+    background:rgba(255,255,255,.94);
+    border:1px solid rgba(20,107,69,.1);
+    border-radius:22px;
+    box-shadow:var(--shadow);
+    padding:24px;
+  }
+  .card h2{font-family:Georgia,serif;margin:0 0 5px;color:var(--green-dark)}
+  .card p{margin:0;color:var(--muted)}
+  .section-head{display:flex;justify-content:space-between;gap:15px;align-items:flex-start;margin-bottom:20px}
+  .count{
+    min-width:48px;height:34px;padding:0 12px;border-radius:20px;
+    background:#edf7ef;color:var(--green-dark);display:grid;place-items:center;font-weight:800;
+  }
+  .add-row{display:flex;gap:10px;margin-bottom:16px}
+  input,select{
+    width:100%;border:1px solid #d8ddd8;background:#fff;border-radius:12px;
+    padding:12px 13px;font:inherit;color:var(--ink);outline:none;
+  }
+  input:focus,select:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(20,107,69,.1)}
+  button{
+    border:0;border-radius:12px;padding:11px 15px;font:inherit;font-weight:750;
+    cursor:pointer;transition:.16s ease;white-space:nowrap;
+  }
+  button:hover{transform:translateY(-1px)}
+  .primary{background:var(--red);color:#fff;box-shadow:0 5px 14px rgba(185,28,43,.2)}
+  .green{background:var(--green);color:#fff}
+  .outline{background:#fff;color:var(--green-dark);border:1px solid #cddbd1}
+  .danger{background:#fff0f0;color:var(--red-dark)}
+  .small{padding:7px 10px;border-radius:9px;font-size:.88rem}
+  .people{display:flex;flex-direction:column;gap:8px;max-height:430px;overflow:auto;padding-right:3px}
+  .person{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:11px 12px;background:#fbfcfa;border:1px solid #e7ebe6;border-radius:12px;
+  }
+  .person-name{display:flex;align-items:center;gap:10px;font-weight:650}
+  .ornament{width:12px;height:12px;border-radius:50%;background:var(--red);box-shadow:0 0 0 3px #f8dddd}
+  .empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed #d4ddd5;border-radius:14px}
+  .year-row{display:flex;gap:10px;align-items:end;margin-top:20px}
+  .field{flex:1}
+  label{display:block;font-size:.8rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 7px}
+  .action-stack{display:flex;flex-direction:column;gap:10px;margin-top:20px}
+  .action-stack button{width:100%}
+  .hint{font-size:.85rem;color:var(--muted);line-height:1.5;margin-top:13px!important}
+  .exchange-card{width:100%;max-width:720px;margin:20px auto 0}
+  .exchange-meta{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 20px}
+  .pill{background:#f4f7f3;border-radius:99px;padding:7px 10px;font-size:.85rem;color:var(--green-dark);font-weight:700}
+  .assignment-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .assignment{
+    display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:8px;align-items:center;
+    padding:12px 14px;border-radius:12px;background:#fffaf2;border:1px solid #f0e5cf;
+  }
+  .assignment .arrow{color:var(--red);font-size:1.3rem;font-weight:700;line-height:1}
+  .recipient{font-weight:800;color:var(--green-dark)}
+  .assignment-reveal{
+    display:none;align-items:center;gap:8px;
+  }
+  .assignments-visible .assignment-reveal{display:flex;grid-column:2}
+  .assignment button{grid-column:3;min-width:88px}
+  .assignment-list{grid-template-columns:1fr}
+  .history{margin-top:20px}
+  .history-item{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:12px 0;border-bottom:1px solid #edf0ec;
+  }
+  .history-item:last-child{border-bottom:0}
+  .history-year{font-weight:850}
+  .status{font-size:.8rem;color:var(--muted)}
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+  .toast{
+    position:fixed;right:20px;bottom:20px;z-index:10;
+    background:#193c2c;color:white;padding:13px 16px;border-radius:12px;
+    box-shadow:0 12px 35px rgba(0,0,0,.2);transform:translateY(130px);opacity:0;
+    transition:.25s ease;max-width:360px;
+  }
+  .toast.show{transform:none;opacity:1}
+  .modal-backdrop{
+    position:fixed;inset:0;background:rgba(13,30,21,.55);display:none;
+    align-items:center;justify-content:center;padding:20px;z-index:20;backdrop-filter:blur(4px)
+  }
+  .modal-backdrop.open{display:flex}
+  .modal{background:#fff;border-radius:22px;padding:25px;max-width:560px;width:100%;box-shadow:0 25px 80px rgba(0,0,0,.3)}
+  .modal h2{font-family:Georgia,serif;color:var(--green-dark);margin-top:0}
+  .reveal{
+    background:linear-gradient(135deg,#fdf5df,#fff);
+    border:1px solid #ead9ad;border-radius:16px;padding:25px;text-align:center;margin:15px 0
+  }
+  .reveal .recipient-big{font:800 clamp(2rem,8vw,3.4rem) Georgia,serif;color:var(--red);margin:10px 0}
+  footer{text-align:center;color:#7a817b;font-size:.82rem;padding:0 20px 30px}
+  @media(max-width:800px){
+    .grid{grid-template-columns:1fr}
+    .assignment-list{grid-template-columns:1fr}
+    .add-row{flex-direction:column}
+    .year-row{align-items:stretch}
+  }
+  @media print{
+    header,.garland,.toolbar,.people-card,.setup-card,footer,.no-print{display:none!important}
+    .app{margin:0;padding:0}.grid{display:block}.exchange-card{box-shadow:none;border:0}
+    body{background:white}.assignment-list{grid-template-columns:1fr}.assignment-reveal{display:contents!important}
+    .assignment{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<div class="garland"></div>
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <div class="tree">🎄</div>
+      <div>
+        <h1>Christmas Gift Exchange</h1>
+        <p class="subtitle">Keep the names. Shuffle the stockings. Nobody gets themselves. Nobody gets their reciprocal partner.</p>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="app">
+  <div class="grid">
+    <section class="card people-card">
+      <div class="section-head">
+        <div>
+          <h2>🎁 People</h2>
+          <p>Your reusable participant list.</p>
+        </div>
+        <div class="count" id="peopleCount">0</div>
+      </div>
+
+      <div class="add-row">
+        <input id="personInput" type="text" maxlength="80" placeholder="Enter a person's name..." autocomplete="off">
+        <button class="green" id="addPersonBtn">＋ Add Person</button>
+      </div>
+
+      <div id="peopleList" class="people"></div>
+
+      <div class="toolbar">
+        <button class="outline" id="exportBtn">💾 Save People / Data</button>
+        <button class="outline" id="importBtn">📂 Load Data</button>
+        <input id="fileInput" type="file" accept=".json,application/json" hidden>
+      </div>
+      <p class="hint">Your data is saved automatically in this browser. Save a JSON backup if you want to move the list to another computer or keep a yearly archive.</p>
+    </section>
+
+    <section class="card setup-card">
+      <div class="section-head">
+        <div>
+          <h2>✨ New Exchange</h2>
+          <p>Create a fresh set of assignments.</p>
+        </div>
+      </div>
+
+      <div class="year-row">
+        <div class="field">
+          <label for="yearInput">Year</label>
+          <input id="yearInput" type="number" min="2000" max="2100">
+        </div>
+      </div>
+
+      <div class="action-stack">
+        <button class="primary" id="generateBtn">🎅 Generate Gift Exchange</button>
+        <button class="outline" id="clearCurrentBtn">Clear Current Results</button>
+      </div>
+
+      <p class="hint">
+        The generator guarantees that nobody buys for themselves and nobody forms a two-person reciprocal pair.
+        Every participant is assigned exactly once.
+      </p>
+
+      <div class="history">
+        <div class="section-head" style="margin-top:25px">
+          <div><h2 style="font-size:1.35rem">📜 Past Years</h2></div>
+        </div>
+        <div id="historyList"></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="card exchange-card" id="exchangeCard">
+    <div class="section-head">
+      <div>
+        <h2 id="exchangeTitle">🎄 Current Exchange</h2>
+        <p id="exchangeSubtitle">Generate an exchange to see the assignments.</p>
+      </div>
+    </div>
+    <div id="exchangeContent">
+      <div class="empty">Your freshly wrapped assignments will appear here.</div>
+    </div>
+  </section>
+</main>
+
+<footer>Made for stockings, spreadsheets, and the annual family question: “Who did I get?” 🎄</footer>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-backdrop" id="revealModal">
+  <div class="modal">
+    <h2>🎁 Secret Assignment</h2>
+    <p id="revealGiver"></p>
+    <div class="reveal">
+      <div>You are buying a gift for</div>
+      <div class="recipient-big" id="revealRecipient"></div>
+      <div>Keep it under wraps! 🤫</div>
+    </div>
+    <button class="green" id="closeReveal" style="width:100%">Done</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  const STORAGE_KEY = "christmasGiftExchangeData_v1";
+  const $ = id => document.getElementById(id);
+
+  const state = {
+    people: [],
+    exchanges: [],
+    currentYear: new Date().getFullYear(),
+    currentAssignments: null
+  };
+
+  function makeId() {
+    return (crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(36).slice(2));
+  }
+
+  function saveState() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      people: state.people,
+      exchanges: state.exchanges
+    }));
+  }
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      if (Array.isArray(data.people)) state.people = data.people;
+      if (Array.isArray(data.exchanges)) state.exchanges = data.exchanges;
+    } catch {
+      showToast("Could not read the saved browser data.");
+    }
+  }
+
+  function showToast(message) {
+    const toast = $("toast");
+    toast.textContent = message;
+    toast.classList.add("show");
+    clearTimeout(showToast.timer);
+    showToast.timer = setTimeout(() => toast.classList.remove("show"), 3000);
+  }
+
+  function addPerson() {
+    const input = $("personInput");
+    const name = input.value.trim();
+    if (!name) return;
+    if (state.people.some(p => p.name.toLowerCase() === name.toLowerCase())) {
+      showToast("That person is already on the list.");
+      return;
+    }
+    state.people.push({ id: makeId(), name });
+    input.value = "";
+    saveState();
+    renderPeople();
+  }
+
+  function removePerson(id) {
+    const person = state.people.find(p => p.id === id);
+    if (!person) return;
+    if (!confirm(`Remove ${person.name} from the active people list?\\n\\nPast exchanges will remain unchanged.`)) return;
+    state.people = state.people.filter(p => p.id !== id);
+    saveState();
+    renderPeople();
+  }
+
+  function renderPeople() {
+    $("peopleCount").textContent = state.people.length;
+    const list = $("peopleList");
+    if (!state.people.length) {
+      list.innerHTML = '<div class="empty">No participants yet. Add your first name above.</div>';
+      return;
+    }
+    list.innerHTML = state.people.map(person => `
+      <div class="person">
+        <div class="person-name"><span class="ornament"></span>${escapeHtml(person.name)}</div>
+        <button class="danger small" data-remove="${person.id}">Remove</button>
+      </div>
+    `).join("");
+    list.querySelectorAll("[data-remove]").forEach(btn => {
+      btn.addEventListener("click", () => removePerson(btn.dataset.remove));
+    });
+  }
+
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, ch => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[ch]));
+  }
+
+  // Generates a permutation with no fixed points and no reciprocal 2-cycles.
+  // For this problem size, randomized backtracking is fast and gives us a
+  // straightforward guarantee rather than merely hoping a shuffle works.
+  function generateAssignments(people) {
+    const n = people.length;
+    if (n < 3) throw new Error("You need at least 3 people.");
+    if (n === 3) {
+      return people.map((giver, i) => ({
+        giverId: giver.id,
+        recipientId: people[(i + 1) % n].id
+      }));
+    }
+
+    const giverIndexes = Array.from({length:n}, (_,i) => i);
+    const maxAttempts = 1000;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const recipients = shuffle(giverIndexes.slice());
+
+      let valid = true;
+      for (let i = 0; i < n; i++) {
+        if (recipients[i] === i) { valid = false; break; }
+        if (recipients[recipients[i]] === i) { valid = false; break; }
+      }
+      if (valid) {
+        return people.map((giver, i) => ({
+          giverId: giver.id,
+          recipientId: people[recipients[i]].id
+        }));
+      }
+    }
+
+    // Deterministic fallback: one large cycle is guaranteed to have no
+    // self assignments or 2-cycles when n >= 3.
+    return people.map((giver, i) => ({
+      giverId: giver.id,
+      recipientId: people[(i + 1) % n].id
+    }));
+  }
+
+  function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
+
+  function generateExchange() {
+    const year = Number($("yearInput").value);
+    if (!Number.isInteger(year) || year < 2000 || year > 2100) {
+      showToast("Please enter a valid year.");
+      return;
+    }
+    if (state.people.length < 3) {
+      showToast("Add at least 3 people before generating an exchange.");
+      return;
+    }
+
+    const assignments = generateAssignments(state.people);
+    const exchange = {
+      year,
+      createdAt: new Date().toISOString(),
+      assignments: assignments.map(assignment => ({...assignment, revealed:false}))
+    };
+
+    const existingIndex = state.exchanges.findIndex(e => e.year === year);
+    if (existingIndex >= 0) {
+      if (!confirm(`An exchange for ${year} already exists. Replace it with a new draw?`)) return;
+      state.exchanges[existingIndex] = exchange;
+    } else {
+      state.exchanges.push(exchange);
+    }
+
+    state.exchanges.sort((a,b) => b.year - a.year);
+    state.currentYear = year;
+    state.currentAssignments = assignments;
+    saveState();
+    renderHistory();
+    renderExchange();
+    showToast(`🎁 ${year} exchange generated for ${state.people.length} people!`);
+  }
+
+  function getPersonName(id) {
+    return state.people.find(p => p.id === id)?.name || "(Former participant)";
+  }
+
+  function findExchange(year) {
+    return state.exchanges.find(e => e.year === Number(year));
+  }
+
+  function renderExchange() {
+    const year = state.currentYear;
+    const exchange = findExchange(year);
+    const content = $("exchangeContent");
+
+    if (!exchange) {
+      $("exchangeTitle").textContent = "🎄 Current Exchange";
+      $("exchangeSubtitle").textContent = "Generate an exchange to see the assignments.";
+      content.innerHTML = '<div class="empty">Your freshly wrapped assignments will appear here.</div>';
+      return;
+    }
+
+    state.currentAssignments = exchange.assignments;
+    $("exchangeTitle").textContent = `🎄 ${exchange.year} Gift Exchange`;
+    $("exchangeSubtitle").textContent = `${exchange.assignments.length} assignments • generated ${new Date(exchange.createdAt).toLocaleDateString()}`;
+
+    const allRevealed = exchange.assignments.every(assignment => assignment.revealed === true);
+    const rows = exchange.assignments.map((a, index) => `
+      <div class="assignment${a.revealed === true ? " assignments-visible" : ""}">
+        <strong>${escapeHtml(getPersonName(a.giverId))}</strong>
+        <div class="assignment-reveal">
+          <span class="arrow">⟶</span>
+          <span class="recipient">${escapeHtml(getPersonName(a.recipientId))}</span>
+        </div>
+        <button class="${a.revealed === true ? "danger" : "outline"} small no-print" title="${a.revealed === true ? "Hide" : "Reveal"} this person's assignment"
+          data-reveal="${index}" data-revealed="${a.revealed === true}">${a.revealed === true ? "🙈 Hide" : "🎁 Reveal"}</button>
+      </div>
+    `).join("");
+
+    content.innerHTML = `
+      <div class="exchange-meta">
+        <span class="pill">🎅 ${exchange.assignments.length} participants</span>
+        <button class="outline small no-print" id="toggleAllBtn" data-visible="${allRevealed}">${allRevealed ? "🙈 Hide All Assignments" : "👁️ Show All Assignments"}</button>
+      </div>
+      <div class="assignment-list" id="assignmentList">${rows}</div>
+      <div class="toolbar no-print">
+        <button class="outline" id="printBtn">🖨️ Print</button>
+        <button class="outline" id="copyBtn">📋 Copy Assignments</button>
+      </div>
+    `;
+
+    content.querySelectorAll("[data-reveal]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const assignment = exchange.assignments[Number(btn.dataset.reveal)];
+        const row = btn.closest(".assignment");
+        const revealed = btn.dataset.revealed !== "true";
+        assignment.revealed = revealed;
+        row.classList.toggle("assignments-visible", revealed);
+        btn.textContent = revealed ? "🙈 Hide" : "🎁 Reveal";
+        btn.classList.toggle("danger", revealed);
+        btn.classList.toggle("outline", !revealed);
+        btn.dataset.revealed = String(revealed);
+        const allVisible = exchange.assignments.every(assignment => assignment.revealed === true);
+        $("toggleAllBtn").dataset.visible = String(allVisible);
+        $("toggleAllBtn").textContent = allVisible ? "🙈 Hide All Assignments" : "👁️ Show All Assignments";
+        saveState();
+      });
+    });
+
+    $("toggleAllBtn").addEventListener("click", () => {
+      const list = $("assignmentList");
+      const rows = list.querySelectorAll(".assignment");
+      const showAll = $("toggleAllBtn").dataset.visible !== "true";
+      rows.forEach(row => {
+        row.classList.toggle("assignments-visible", showAll);
+        const btn = row.querySelector("[data-reveal]");
+        exchange.assignments[Number(btn.dataset.reveal)].revealed = showAll;
+        btn.textContent = showAll ? "🙈 Hide" : "🎁 Reveal";
+        btn.classList.toggle("danger", showAll);
+        btn.classList.toggle("outline", !showAll);
+        btn.dataset.revealed = String(showAll);
+      });
+      $("toggleAllBtn").dataset.visible = String(showAll);
+      $("toggleAllBtn").textContent = showAll ? "🙈 Hide All Assignments" : "👁️ Show All Assignments";
+      saveState();
+    });
+
+    $("printBtn").addEventListener("click", () => window.print());
+    $("copyBtn").addEventListener("click", async () => {
+      const text = exchange.assignments.map(a => `${getPersonName(a.giverId)} → ${getPersonName(a.recipientId)}`).join("\n");
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast("Assignments copied to the clipboard.");
+      } catch {
+        showToast("Clipboard access was unavailable.");
+      }
+    });
+  }
+
+  function renderHistory() {
+    const list = $("historyList");
+    if (!state.exchanges.length) {
+      list.innerHTML = '<div class="empty">No past exchanges yet.</div>';
+      return;
+    }
+    list.innerHTML = state.exchanges.map(e => `
+      <div class="history-item">
+        <div>
+          <div class="history-year">${e.year}</div>
+          <div class="status">${e.assignments.length} participants</div>
+        </div>
+        <button class="outline small" data-year="${e.year}">View</button>
+      </div>
+    `).join("");
+    list.querySelectorAll("[data-year]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        state.currentYear = Number(btn.dataset.year);
+        $("yearInput").value = state.currentYear;
+        renderExchange();
+        $("exchangeCard").scrollIntoView({behavior:"smooth", block:"start"});
+      });
+    });
+  }
+
+  async function exportData() {
+    const payload = {
+      app: "Christmas Gift Exchange",
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      people: state.people,
+      exchanges: state.exchanges
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+
+    if ("showSaveFilePicker" in window) {
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: "christmas-gift-exchange-data.json",
+          types: [{
+            description: "JSON files",
+            accept: {"application/json": [".json"]}
+          }]
+        });
+        const writable = await handle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        showToast("Your gift exchange data was saved.");
+        return;
+      } catch (error) {
+        if (error.name === "AbortError") return;
+      }
+    }
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "christmas-gift-exchange-data.json";
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast("Your gift exchange data was saved.");
+  }
+
+  function importData(file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(reader.result);
+        if (!Array.isArray(data.people)) throw new Error();
+        state.people = data.people.filter(p => p && p.id && p.name);
+        state.exchanges = Array.isArray(data.exchanges) ? data.exchanges : [];
+        saveState();
+        renderPeople();
+        renderHistory();
+        state.currentYear = new Date().getFullYear();
+        $("yearInput").value = state.currentYear;
+        state.currentAssignments = null;
+        renderExchange();
+        showToast("Data loaded successfully. 🎄");
+      } catch {
+        showToast("That file doesn't look like a valid gift exchange backup.");
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  $("addPersonBtn").addEventListener("click", addPerson);
+  $("personInput").addEventListener("keydown", e => {
+    if (e.key === "Enter") addPerson();
+  });
+  $("generateBtn").addEventListener("click", generateExchange);
+  $("exportBtn").addEventListener("click", exportData);
+  $("importBtn").addEventListener("click", () => $("fileInput").click());
+  $("fileInput").addEventListener("change", e => {
+    if (e.target.files[0]) importData(e.target.files[0]);
+    e.target.value = "";
+  });
+  $("clearCurrentBtn").addEventListener("click", () => {
+    const index = state.exchanges.findIndex(exchange => exchange.year === state.currentYear);
+    if (index < 0) return;
+    state.exchanges.splice(index, 1);
+    state.currentAssignments = null;
+    saveState();
+    renderHistory();
+    renderExchange();
+    showToast("Current exchange cleared.");
+  });
+  $("closeReveal").addEventListener("click", () => $("revealModal").classList.remove("open"));
+  $("revealModal").addEventListener("click", e => {
+    if (e.target === $("revealModal")) $("revealModal").classList.remove("open");
+  });
+
+  loadState();
+  $("yearInput").value = state.currentYear;
+  renderPeople();
+  renderHistory();
+  renderExchange();
+})();
+</script>
+</body>
+</html>
